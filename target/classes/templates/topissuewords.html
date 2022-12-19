@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Top Issue Words</title>
+</head>
+<script>
+    (function () {
+
+        window.addEventListener("load", function () {
+
+            var table = document.getElementById("topissuewords");
+            var data = [];
+            var xinforma = [];
+            for (let i = 1; i < table.rows.length; i++) {
+                data.push(parseInt(table.rows[i].cells[2].innerHTML))
+                xinforma.push(table.rows[i].cells[1].innerHTML)
+            }
+
+
+
+            // 获取上下文
+            var a_canvas = document.getElementById('a_canvas');
+            var context = a_canvas.getContext("2d");
+
+
+            // 绘制背景
+            var gradient = context.createLinearGradient(0, 0, 0, 300);
+
+
+            // gradient.addColorStop(0,"#e0e0e0");
+            //gradient.addColorStop(1,"#ffffff");
+
+
+            context.fillStyle = gradient;
+
+            context.fillRect(0, 0, a_canvas.width, a_canvas.height);
+
+            var realheight = a_canvas.height - 15;
+            var realwidth = a_canvas.width - 40;
+            // 描绘边框
+            var grid_cols = data.length + 1;
+            var grid_rows = 4;
+            var cell_height = realheight / grid_rows;
+            var cell_width = realwidth / grid_cols;
+            context.lineWidth = 1;
+            context.strokeStyle = "#a0a0a0";
+
+            // 结束边框描绘
+            context.beginPath();
+
+
+            //划横线
+            context.moveTo(0, realheight);
+            context.lineTo(realwidth, realheight);
+
+
+            //画竖线
+            context.moveTo(0, 20);
+            context.lineTo(0, realheight);
+            context.lineWidth = 1;
+            context.strokeStyle = "black";
+            context.stroke();
+
+
+            var max_v = 0;
+
+            for (var i = 0; i < data.length; i++) {
+                if (data[i] > max_v) {
+                    max_v = data[i]
+                }
+                ;
+            }
+            max_v = max_v * 1.1;
+            // 将数据换算为坐标
+            var points = [];
+            for (var i = 0; i < data.length; i++) {
+                var v = data[i];
+                var px = cell_width * (i + 1);
+                var py = realheight - realheight * (v / max_v);
+                //alert(py);
+                points.push({"x": px, "y": py});
+            }
+
+            //绘制坐标图形
+            for (var i in points) {
+                var p = points[i];
+                context.beginPath();
+                context.fillStyle = "green";
+                context.fillRect(p.x, p.y, 15, realheight - p.y);
+
+                context.fill();
+            }
+
+            for (var i in points) {
+                var p = points[i];
+                context.beginPath();
+                context.fillStyle = "black";
+                context.fillText(data[i], p.x + 1, p.y - 15);
+                context.fillText(xinforma[i], p.x + 1, realheight + 12);
+                context.fillText('Words', realwidth, realheight + 12);
+                context.fillText('Occurrence Time', 0, 10);
+            }
+        }, false);
+    })();
+
+</script>
+<body background="../static/background.jpg">
+<h1 th:text="'Top Issue Words For '+${repoName}"></h1>
+<div>
+    <table style="border-right: 1px solid #000000;
+        border-bottom: 1px solid #000000;
+        text-align: center;" id="topissuewords">
+        <thead>
+        <tr>
+            <th style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;">Ranking
+            </th>
+            <th style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;">Word
+            </th>
+            <th style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;">Number of Occurrence
+            </th>
+        </tr>
+        <tr th:each="word, Stat:${topissuewords}">
+            <td style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;" th:text="${Stat.count}"></td>
+            <td style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;" th:text="${word.word}"></td>
+            <td style="border-left: 1px solid #000000;
+        border-top: 1px solid #000000;" th:text="${word.number}"></td>
+        </tr>
+
+        </thead>
+    </table>
+</div>
+
+<div>
+    <p>
+        <canvas id="a_canvas" width="600" height="300"></canvas>
+    </p>
+</div>
+</body>
+</html>

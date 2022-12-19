@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="x-ua-compatible" content="IE=edge"/>
+    <title>Repository Summary</title>
+    <link href="../static/css/base-style.css" rel="stylesheet" type="text/css"/>
+    <link href="../static/css/style.css" rel="stylesheet" type="text/css"/>
+    <script>
+        (function () {
+
+            window.addEventListener("load", function () {
+
+                var avg = document.getElementById("avgissues").innerText;
+                var max = document.getElementById("maxissues").innerText;
+                var min = document.getElementById("minissues").innerText;
+                console.log(avg);
+                console.log(max);
+                console.log(min);
+                avg = avg.replace("d"," ");
+                avg = avg.replace("h"," ");
+                avg = avg.replace("m","");
+                var avg_day = avg.split(" ")[0];
+                var avg_hour = avg.split(" ")[1];
+                var avg_minutes = avg.split(" ")[2];
+
+                var avg_overall = parseInt(avg_day)*24*60+parseInt(avg_hour)*60+parseInt(avg_minutes);
+                max = max.replace("d"," ");
+                max = max.replace("h"," ");
+                max = max.replace("m","");
+
+
+                var max_day = max.split(" ")[0];
+                var max_hour = max.split(" ")[1];
+                var max_min = max.split(" ")[2];
+
+                var max_overall = parseInt(max_day)*24*60+parseInt(max_hour)*60+parseInt(max_min);
+                min = min.replace("m"," ");
+                min = min.replace("s","");
+                var second=0;
+                var data = [];
+                var xinforma = [];
+                xinforma.push("avg. issue solving time");
+                xinforma.push("max issue solving time");
+                xinforma.push("min issue solving time");
+                data.push(avg_overall);
+                data.push(max_overall);
+                data.push(second);
+
+
+
+                // 获取上下文
+                var a_canvas = document.getElementById('a_canvas');
+                var context = a_canvas.getContext("2d");
+
+
+                // 绘制背景
+                var gradient = context.createLinearGradient(0, 0, 0, 300);
+
+
+                // gradient.addColorStop(0,"#e0e0e0");
+                //gradient.addColorStop(1,"#ffffff");
+
+
+                context.fillStyle = gradient;
+
+                context.fillRect(0, 0, a_canvas.width, a_canvas.height);
+
+                var realheight = a_canvas.height - 15;
+                var realwidth = a_canvas.width - 40;
+                // 描绘边框
+                var grid_cols = data.length + 1;
+                var grid_rows = 4;
+                var cell_height = realheight / grid_rows;
+                var cell_width = realwidth / grid_cols;
+                context.lineWidth = 1;
+                context.strokeStyle = "#a0a0a0";
+
+                // 结束边框描绘
+                context.beginPath();
+
+
+                //划横线
+                context.moveTo(0, realheight);
+                context.lineTo(realwidth, realheight);
+
+
+                //画竖线
+                context.moveTo(0, 20);
+                context.lineTo(0, realheight);
+                context.lineWidth = 1;
+                context.strokeStyle = "black";
+                context.stroke();
+
+
+                var max_v = 0;
+
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i] > max_v) {
+                        max_v = data[i]
+                    }
+                    ;
+                }
+                max_v = max_v * 1.1;
+                // 将数据换算为坐标
+                var points = [];
+                for (var i = 0; i < data.length; i++) {
+                    var v = data[i];
+                    var px = cell_width * (i + 1);
+                    var py = realheight - realheight * (v / max_v);
+                    //alert(py);
+                    points.push({"x": px, "y": py});
+                }
+
+                //绘制坐标图形
+                for (var i in points) {
+                    var p = points[i];
+                    context.beginPath();
+                    context.fillStyle = "green";
+                    context.fillRect(p.x, p.y, 15, realheight - p.y);
+
+                    context.fill();
+                }
+
+                for (var i in points) {
+                    var p = points[i];
+                    context.beginPath();
+                    context.fillStyle = "black";
+                    //context.fillText(data[i], p.x + 1, p.y - 15);
+                    context.fillText(xinforma[i], p.x + 1, realheight + 12);
+                    context.fillText('Statistic Type', realwidth, realheight + 12);
+                    context.fillText('Issue Solving Time', 0, 10);
+                }
+            }, false);
+        })();
+        //绘制饼图
+        function drawCircle(canvasId, data_arr, color_arr, text_arr)
+        {
+            var c = document.getElementById(canvasId);
+            var ctx = c.getContext("2d");
+
+            var radius = c.height / 2 - 20; //半径
+            var ox = radius + 20, oy = radius + 20; //圆心
+
+            var width = 30, height = 10; //图例宽和高
+            var posX = ox * 2 + 20, posY = 30;   //
+            var textX = posX + width + 5, textY = posY + 10;
+
+            var startAngle = 0; //起始弧度
+            var endAngle = 0;   //结束弧度
+            for (var i = 0; i < data_arr.length; i++)
+            {
+                //绘制饼图
+                endAngle = endAngle + data_arr[i] * Math.PI * 2; //结束弧度
+                ctx.fillStyle = color_arr[i];
+                ctx.beginPath();
+                ctx.moveTo(ox, oy); //移动到到圆心
+                ctx.arc(ox, oy, radius, startAngle, endAngle, false);
+                ctx.closePath();
+                ctx.fill();
+                startAngle = endAngle; //设置起始弧度
+
+                //绘制比例图及文字
+                ctx.fillStyle = color_arr[i];
+                ctx.fillRect(posX, posY + 20 * i, width, height);
+                ctx.moveTo(posX, posY + 20 * i);
+                ctx.font = 'bold 12px 微软雅黑';    //斜体 30像素 微软雅黑字体
+                ctx.fillStyle = color_arr[i]; //"#000000";
+                var percent = text_arr[i] + "：" + (100 * data_arr[i]).toFixed(2) + "%";
+                ctx.fillText(percent, textX, textY + 20 * i);
+            }
+        }
+
+        function init() {
+            //绘制饼图
+            //比例数据和颜色
+            var openissue = parseInt(document.getElementById("openissuenum").innerText);
+            var closeissue = parseInt(document.getElementById("closeissuenum").innerText);
+            var total = parseInt(openissue)+parseInt(closeissue);
+            var data_arr = [closeissue/total, openissue/total];
+
+            var color_arr = ["#b60808", "#bbd9bb"];
+            var text_arr = ["Closed Issues", "Open Issues"];
+
+            //drawCircle("canvas_circle", data_arr, color_arr, text_arr);
+
+            var comnum = document.getElementById("commitdis").innerText;
+            var splittedrange = comnum.split(" ");
+            var total2 = parseInt(splittedrange[0])+parseInt(splittedrange[1])+parseInt(splittedrange[2])
+            //console.log(total2);
+            //console.log(comnum);
+            var data_arr2  = [splittedrange[0]/total2, splittedrange[1]/total2, splittedrange[2]/total2];
+            var color_arr2 = ["#80ffff","#46a3ff","#6a6aff"]
+            var text_arr2 = ["Commits at Morning", "Commits at Afternoon", "Commits at Night"]
+            drawCircle("canvas_circle2", data_arr2, color_arr2, text_arr2);
+        }
+
+        //页面加载时执行init()函数
+        window.onload = init;
+    </script>
+</head>
+<body background="../static/background.jpg">
+<div id="content">
+    <h1 th:text="'GitHub Repository Summary For: '+${repoName}"></h1>
+    <div id="summary">
+        <table>
+            <tr>
+                <td>
+                    <div class="summaryGroup">
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class="infoBox" id="tests">
+                                        <div class="counter" th:text="${devnumber}">0</div>
+                                        <p>Developers</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="infoBox" id="failures">
+                                        <div class="counter" th:text="${releasenum}">0</div>
+                                        <p>Releases</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="infoBox" id="ignored">
+                                        <div class="counter" th:text="${commitsnumber}">0</div>
+                                        <p>Commits</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="infoBox" id="duration">
+                                        <div class="counter" th:text="${avgissuesolving}" id="avgissues">0</div>
+                                        <p>Avg. Issue Solving Time</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="infoBox" id="maxissue">
+                                        <div class="counter" th:text="${maxissuesolving}" id="maxissues">0</div>
+                                        <p>MAX Issue Solving Time</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="infoBox" id="minissue">
+                                        <div class="counter" th:text="${minissuesolving}" id="minissues">0</div>
+                                        <p>MIN Issue Solving Time</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td>
+                    <div class="infoBox success" id="successRate">
+                        <div class="percent" th:text="${openissues}" id="openissuenum">0</div>
+                        <p>Open Issues</p>
+                    </div>
+                </td>
+                <td>
+                    <div class="infoBox failures" id="failRate">
+                        <div class="percent" th:text="${closeissues}" id="closeissuenum">0</div>
+                        <p>Closed Issues</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div>
+    <a id="123" style="visibility: hidden">27189739821</a>
+    <canvas id="a_canvas" width="550" height="300" style="border:2px solid #ffffff;" >
+        浏览器不支持canvas
+    </canvas>
+	<a th:text="${commitdistribution}" id="commitdis" style="display: none"></a>
+	<canvas id="canvas_circle2" width="550" height="300" style="border:2px solid #ffffff;" >
+        浏览器不支持canvas
+    </canvas>
+</div>
+<div>
+    <table>
+        <tr>
+            <td>
+                <a style="visibility: hidden">
+                    <h3>Detail:</h3>
+                </a>
+            </td>
+            <td>
+                <a style="">
+                    <h3>Detail:</h3>
+                </a>
+            </td>
+            <td>
+                <a href="/trojan/commitsbtwrelease" style="color: #ecdada">
+                    <input type="button" value="See Commits between Release" style="color: red">
+                </a>
+            </td>
+            <td>
+                <a href="/trojan/topdevelopers" style="color: aqua">
+                    <input type="button" value="See Top Developers" style="color: blue">
+                </a>
+            </td>
+            <td>
+                <a href="/trojan/topissuewords" style="color: gold">
+                    <input type="button" value="See Top Words In Issues" style="color: darkgoldenrod">
+                </a>
+            </td>
+        </tr>
+    </table>
+
+</div>
+</body>
+</html>
